@@ -12,7 +12,7 @@ import warnings
 
 warnings.filterwarnings('ignore')
 
-class SEKNN():
+class SEKNN:
     def __init__(self):
         self.link = 257
         

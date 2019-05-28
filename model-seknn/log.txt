@@ -1,0 +1,4 @@
+
+*** Episode=200 ***
+  predictor: RMSE =4.8831, MAE =2.6395,MAPE =12.2548
+I-predictor: RMSE_=5.6471, MAE_=4.0882,MAPE_=19.2818

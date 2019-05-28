@@ -55,7 +55,7 @@ class DataPreprocess:
                 ms.append(80)
                 y+=1
             else:
-                ms.append(50)
+                ms.append(60) #40-60, 50 used before.
                 z+=1
         if count==False:
             return ms
@@ -90,7 +90,7 @@ class DataPreprocess:
         dataX = np.asarray(dataX)
         dataY = np.asarray(dataY)
         dataY_nofilt = np.asarray(dataY_nofilt)
-        dataY_nofilt[dataY_nofilt == 0] = 1e2
+        dataY_nofilt[dataY_nofilt == 0] = 0.1
         return dataX,dataY,dataY_nofilt
     
     def get_data(self, data_type=None):

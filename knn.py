@@ -14,7 +14,7 @@ import warnings
 
 warnings.filterwarnings('ignore')
 
-class KNN():
+class KNN:
     def __init__(self):
         self.link = 257
         
@@ -84,7 +84,7 @@ class KNN():
             pred: predicted valule of X.
         """
         D = []
-        for i, x in enumerate(self.trainX_cl):
+        for x in self.trainX_cl:
             D.append(self.distance(self.delete_corr(predX), x))
         topK_index = self.index_sorted(D)[:15]
         topK_y = np.asarray(self.trainY[topK_index]).reshape(-1, self.link)
@@ -123,3 +123,8 @@ if __name__ == '__main__':
 
         rmse, mae, mape = model.evaluate(y, y_)
         print('predstep={},RMSE = {:.4}, MAE = {:.4}, MAPE = {:.4}'.format(p, rmse, mae, mape))
+
+    import time
+    t1 = time.time()
+    model.predict(testX[54]) * model.dp.maxv
+    print(time.time()-t1)

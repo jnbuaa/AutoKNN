@@ -21,6 +21,9 @@ import keras.backend as K
 import pandas as pd
 from environment import TrafficPrediction
 
+import warnings
+warnings.filterwarnings('ignore')
+
 class DDPG():
     """Deep Deterministic Policy Gradient Algorithms.
     """
@@ -77,7 +80,7 @@ class DDPG():
         x = concatenate([x, error_input])
         # x = Dense(40, activation='relu')(inputs)
         x = Dense(200, activation='relu')(x)
-        x = Dense(self.env.predictor.link, activation='tanh')(x)
+        x = Dense(self.env.link, activation='tanh')(x)
         output = Lambda(lambda x: x * self.bound)(x)
 
         model = Model(inputs=[traffic_input, error_input], outputs=output)
@@ -123,7 +126,7 @@ class DDPG():
         aoutput = self.actor.output
         
         trainable_weights = self.actor.trainable_weights
-        self.action_gradient = tf.placeholder(tf.float32, shape=(None, self.env.predictor.link))
+        self.action_gradient = tf.placeholder(tf.float32, shape=(None, self.env.link))
 
         # tf.gradients will calculate dy/dx with a initial gradients for y
         # action_gradient is dq / da, so this is dq/da * da/dparams
@@ -343,8 +346,9 @@ class DDPG():
                     loss = self.update_model(X1_traffic, X1_error, X2, np.asarray(y))
                     # update target model
                     self.update_target_model()
-                    # reduce epsilon pure batch.
+                    
                     if j%20 == 0:
+                        # reduce epsilon pure batch.
                         self.update_epsilon()
 
                     losses.append(loss)
@@ -356,7 +360,7 @@ class DDPG():
             history['Episode_reward'].append(reward_sum)
             history['Loss'].append(loss)
 
-            print('Episode: {}/{} | reward: {} | loss: {:.3f}'.format(i, episode, reward_sum, loss))
+            print('Episode: {}/{} | reward: {:.4f} | loss: {:.3f}'.format(i, episode, reward_sum, loss))
 
         self.actor.save_weights('model/ddpg_actor.h5')
         self.critic.save_weights('model/ddpg_critic.h5')
@@ -373,7 +377,6 @@ class DDPG():
         reward_sum = 0
         # random_episodes = 0
 
-        # while random_episodes < 100:
         while self.env.pointer < len(self.env.testY_nofilt):
             # self.env.render()
             
@@ -388,14 +391,14 @@ class DDPG():
             self.env.pointer += 1
         
         print('\n##########')
-        MAE, MAPE = self.env.get_error(np.array(self.env.set_predY).reshape(-1, 257),np.array(self.env.set_realY).reshape(-1, 257))
-        print('Final predictor: MAE=%.4f,MAPE=%.4f'%(MAE,MAPE))
-        MAE_, MAPE_ = self.env.get_error(np.array(self.env.set_predY_).reshape(-1, 257),np.array(self.env.set_realY).reshape(-1, 257))
-        print('Final I-predictor: MAE=%.4f,MAPE=%.4f'%(MAE_,MAPE_))
+        RMSE, MAE, MAPE = self.env.get_error(np.array(self.env.set_predY).reshape(-1, 257),np.array(self.env.set_realY).reshape(-1, 257))
+        print('Final predictor: RMSE=%.4f,MAE=%.4f,MAPE=%.4f'%(MAE,MAPE))
+        RMSE_, MAE_, MAPE_ = self.env.get_error(np.array(self.env.set_predY_).reshape(-1, 257),np.array(self.env.set_realY).reshape(-1, 257))
+        print('Final I-predictor: RMSE=%.4f,MAE=%.4f,MAPE=%.4f'%(MAE_,MAPE_))
         with open('/home/jinan/AutoKNN/model/log.txt','a') as f:
             f.write('\n*** Episode=%d ***'%episode)
-            f.write('\n  predictor: MAE =%.4f,MAPE =%.4f'%(MAE,MAPE))
-            f.write('\nI-predictor: MAE_=%.4f,MAPE_=%.4f'%(MAE_,MAPE_))
+            f.write('\n  predictor: RMSE =%.4f,MAE =%.4f,MAPE =%.4f'%(RMSE,MAE,MAPE))
+            f.write('\nI-predictor: RMSE_=%.4f,MAE_=%.4f,MAPE_=%.4f'%(RMSE_,MAE_,MAPE_))
         
         # df = pd.DataFrame(np.array([i * self.env.maxv for i in self.env.testY_nofilt]).reshape(-1, 257))
         # df.to_csv('model/%d-testY6p%d.csv'%(episode, self.env.predstep), header=False, index=False)
